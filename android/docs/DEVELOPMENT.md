@@ -179,7 +179,8 @@ e.g.:
    make -j8
 
 Recommended build products are 'aosp_<cpu>-userdebug' or 'aosp_<cpu>-eng',
-where <cpu> can be one of 'arm', 'x86', 'mips', 'x86_64', 'arm64' or 'mips64'.
+where <cpu> can be one of 'arm', 'x86', 'mips', 'x86_64', 'arm64', 'mips64' or
+riscv64.
 
 To boot the generated system image:
 

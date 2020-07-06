@@ -1417,6 +1417,15 @@ is_mipsish(const AvdInfo* i)
     }
 }
 
+static bool
+is_riscvish(const AvdInfo* i)
+{
+    if (strncmp(i->targetArch, "riscv", 5) == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
 /*
     arm is pretty tricky: the system image device path
     changes depending on the number of disks: the last
@@ -1438,6 +1447,14 @@ const char* const mips_device_id[] = {
     "1f03d400",
     "1f03d600",
     "1f03d800",
+};
+
+const char* const riscv64_device_id[] = {
+    "0x20000000",
+    "0x20000200",
+    "0x20000400",
+    "0x20000600",
+    "0x20000800",
 };
 
 static
@@ -1510,6 +1527,9 @@ char* get_device_path(const AvdInfo* info, const char* image)
     } else if (is_mipsish(info)) {
         snprintf(buf, sizeof(buf), "/dev/block/platform/%s.virtio_mmio/by-name/%s",
                 mips_device_id[i], image);
+    } else if (is_riscvish(info)) {
+        snprintf(buf, sizeof(buf), "/dev/block/platform/%s.virtio_mmio/by-name/%s",
+                riscv64_device_id[i], image);
     }
     return strdup(buf);
 }

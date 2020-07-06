@@ -1826,6 +1826,112 @@ set(qemu-system-x86_64_generated_sources ""
 ${ANDROID_AUTOGEN}/trace/generated-helpers.c)
 set(qemu-system-x86_64_dep libqemuutil qemu2-shared)
 
+## TARGET: qemu-system-riscv64 ##
+set(qemu-system-riscv64_sources ""
+accel/accel.c
+accel/stubs/gvm-stub.c
+accel/stubs/kvm-stub.c
+accel/stubs/whpx-stub.c
+accel/tcg/cpu-exec.c
+accel/tcg/cpu-exec-common.c
+accel/tcg/cputlb.c
+accel/tcg/tcg-all.c
+accel/tcg/tcg-runtime.c
+accel/tcg/tcg-runtime-gvec.c
+accel/tcg/translate-all.c
+accel/tcg/translator.c
+arch_init.c
+balloon.c
+cpus.c
+disas.c
+disas/riscv.c
+dump.c
+exec.c
+fpu/softfloat.c
+gdbstub.c
+hw/acpi/acpi-stub.c
+hw/block/dataplane/virtio-blk.c
+hw/block/vhost-user-blk.c
+hw/block/virtio-blk.c
+hw/char/goldfish_tty.c
+hw/char/virtio-serial-bus.c
+hw/core/generic-loader.c
+hw/core/null-machine.c
+hw/display/vga.c
+hw/display/virtio-gpu-3d.c
+hw/display/virtio-gpu.c
+hw/display/virtio-gpu-pci.c
+hw/input/goldfish_events.c
+hw/input/goldfish_events_common.c
+hw/input/goldfish_rotary.c
+hw/intc/goldfish_pic.c
+hw/misc/goldfish_battery.c
+hw/misc/goldfish_pipe.c
+hw/misc/goldfish_pstore.c
+hw/misc/goldfish_sync.c
+hw/misc/ivshmem.c
+hw/misc/mmio_interface.c
+hw/net/vhost_net.c
+hw/net/virtio-net.c
+hw/riscv/riscv_hart.c
+hw/riscv/riscv_htif.c
+hw/riscv/riscv_ranchu.c
+hw/riscv/sifive_clint.c
+hw/riscv/sifive_e.c
+hw/riscv/sifive_plic.c
+hw/riscv/sifive_prci.c
+hw/riscv/sifive_test.c
+hw/riscv/sifive_uart.c
+hw/riscv/sifive_u.c
+hw/riscv/spike.c
+hw/riscv/virt.c
+hw/scsi/vhost-scsi.c
+hw/scsi/vhost-scsi-common.c
+hw/scsi/vhost-user-scsi.c
+hw/scsi/virtio-scsi.c
+hw/scsi/virtio-scsi-dataplane.c
+hw/smbios/smbios_type_38-stub.c
+hw/timer/goldfish_timer.c
+hw/vfio/common.c
+hw/vfio/display.c
+hw/vfio/pci.c
+hw/vfio/pci-quirks.c
+hw/vfio/platform.c
+hw/vfio/spapr.c
+hw/virtio/vhost-backend.c
+hw/virtio/vhost.c
+hw/virtio/vhost-user.c
+hw/virtio/vhost-vsock.c
+hw/virtio/virtio-balloon.c
+hw/virtio/virtio.c
+hw/virtio/virtio-crypto.c
+hw/virtio/virtio-crypto-pci.c
+ioport.c
+memory.c
+memory_mapping.c
+migration/ram.c
+monitor.c
+numa.c
+qtest.c
+target/riscv/cpu.c
+target/riscv/fpu_helper.c
+target/riscv/gdbstub.c
+target/riscv/helper.c
+target/riscv/kvm-stub.c
+target/riscv/op_helper.c
+target/riscv/pmp.c
+target/riscv/translate.c
+tcg/optimize.c
+tcg/tcg.c
+tcg/tcg-common.c
+tcg/tcg-op.c
+tcg/tcg-op-gvec.c
+tcg/tcg-op-vec.c
+trace/control-target.c)
+set(qemu-system-riscv64_generated_sources ""
+${ANDROID_AUTOGEN}/trace/generated-helpers.c)
+set(qemu-system-riscv64_dep libqemuutil qemu2-shared)
+
 set_source_files_properties(${ANDROID_AUTOGEN}/accel/kvm/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/accel/kvm")
 
 set_source_files_properties(${ANDROID_AUTOGEN}/hw/9pfs/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/hw/9pfs")
@@ -2064,6 +2170,10 @@ ${ANDROID_AUTOGEN}/target/arm/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AU
 
 set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/target/i386/arch_dump.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/arch_memory_mapping.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/bpt_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/cc_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/cpu.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/excp_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/fpu_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/gdbstub.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hax-all.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hax-darwin.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hax-mem.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hvf-all.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/int_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/kvm-stub.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/machine.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/mem_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/misc_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/monitor.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/mpx_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/seg_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/sev-stub.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/smm_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/svm_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/translate.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/xsave_helper.c
 ${ANDROID_AUTOGEN}/target/i386/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/target/i386")
+
+set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/target/riscv/translate.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/fpu_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/op_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/kvm-stub.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/pmp.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/gdbstub.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/helper.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/cpu.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_QEMU2_TOP_DIR}/${ANDROID_AUTOGEN}/target/riscv")
+set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/disas/riscv.c ${ANDROID_QEMU2_TOP_DIR}/disas/i386.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_QEMU2_TOP_DIR}/${ANDROID_AUTOGEN}/disas")
+set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_clint.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/riscv_htif.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_u.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_e.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/virt.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_plic.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/riscv_ranchu.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_prci.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_test.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/riscv_hart.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/spike.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_uart.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_QEMU2_TOP_DIR}/${ANDROID_AUTOGEN}/hw/riscv")
 
 set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/target/i386/hvf-utils/x86.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hvf-utils/x86_cpuid.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hvf-utils/x86_decode.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hvf-utils/x86_descr.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hvf-utils/x86_emu.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hvf-utils/x86_flags.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hvf-utils/x86_mmu.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hvf-utils/x86hvf.c
 PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/target/i386/hvf-utils")

@@ -39,7 +39,7 @@ For more details, see docs/GOLDFISH-VIRTUAL-HARDWARE.TXT.
 
 You specify which architecture to build for with the --arch=<name>
 option, where <name> is one of the emulator's CPU architecture name
-(e.g. 'arm', 'mips', 'x86', 'x86_64', 'arm64' and 'mips64').
+(e.g. 'arm', 'mips', 'x86', 'x86_64', 'arm64', 'mips64' and 'riscv64').
 
 Each architecture has a default configuration (typically 'goldfish') that
 you can override with the --config=<name> option, where <name> is the name
@@ -61,6 +61,7 @@ Here's a table of options to rebuild popular kernel configuration:
      32-bit i386        --arch=x86
      32-bit MIPS        --arch=mips
      64-bit x86_64      --arch=x86_64
+     64-bit riscv64     --arch=riscv64
 
   Ranchu:
      32-bit ARMv7-A     --arch=arm --config=ranchu
@@ -69,6 +70,7 @@ Here's a table of options to rebuild popular kernel configuration:
      64-bit ARMv8       --arch=arm64
      64-bit x86_64      --arch=x86_64 --config=x86_64_ranchu
      64-bit MIPS        --arch=mip64 --config=ranchu
+     64-bit RISCV64     --arch=riscv64 --config=ranchu
 
 The script will generate the following files in its output directory:
 
