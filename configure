@@ -1416,10 +1416,10 @@ for opt do
   esac
 done
 
-if test "$mingw32" == "yes" ; then
-    WINVER=0x0600
-    QEMU_CFLAGS="-DWINVER=$WINVER -D_WIN32_WINNT=$WINVER $QEMU_CFLAGS"
-fi
+#if test "$mingw32" == "yes" ; then
+#    WINVER=0x0600
+#    QEMU_CFLAGS="-DWINVER=$WINVER -D_WIN32_WINNT=$WINVER $QEMU_CFLAGS"
+#fi
 
 if ! has $python; then
   error_exit "Python not found. Use --python=/path/to/python"

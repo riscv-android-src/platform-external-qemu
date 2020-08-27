@@ -299,10 +299,11 @@ hwaddr riscv_cpu_get_phys_page_debug(CPUState *cs, vaddr addr)
 
 void riscv_cpu_do_unaligned_access(CPUState *cs, vaddr addr,
                                    MMUAccessType access_type, int mmu_idx,
-                                   uintptr_t retaddr)
+                                   uintptr_t retaddr, unsigned size)
 {
     RISCVCPU *cpu = RISCV_CPU(cs);
     CPURISCVState *env = &cpu->env;
+    (void)size;
     switch (access_type) {
     case MMU_INST_FETCH:
         cs->exception_index = RISCV_EXCP_INST_ADDR_MIS;

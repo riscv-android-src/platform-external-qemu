@@ -916,6 +916,8 @@ static void pipeDevice_doCommand_v2(HwPipe* pipe) {
 // (no splitting) so all buffer address interpolation will be done
 // using diffFromGuestPostSplit.
 #define RAM_SPLIT_BOUNDARY    0x40000000
+#elif defined(TARGET_RISCV)
+#define RAM_SPLIT_BOUNDARY    0x40000000
 #else
 #error Unsupported architecture!
 #endif

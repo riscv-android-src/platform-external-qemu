@@ -849,6 +849,8 @@ endif()
       armel "${ANDROID_QEMU_arm_DEVICES_${ANDROID_TARGET_TAG}}")
   endif()
 
+  android_add_qemu_executable(riscv64
+                              "${ANDROID_QEMU_riscv64_DEVICES_${ANDROID_TARGET_TAG}}")
   # and the upstream qemu targets, if desired.
   if(QEMU_UPSTREAM)
     message(STATUS "Building upstream qemu.")

@@ -239,6 +239,16 @@ const TargetInfo kTarget = {
         {IMAGE_TYPE_SYSTEM, IMAGE_TYPE_CACHE, IMAGE_TYPE_USER_DATA,
          IMAGE_TYPE_ENCRYPTION_KEY, IMAGE_TYPE_VENDOR, IMAGE_TYPE_SD_CARD},
         {"-vga", "none", NULL},
+#elif defined(TARGET_RISCV64)
+        "riscv64",
+        "riscv64",
+        "android64",
+        "ttyS",
+        "virtio-blk-pci",
+        "virtio-net-pci",
+        {IMAGE_TYPE_SYSTEM, IMAGE_TYPE_CACHE, IMAGE_TYPE_USER_DATA,
+         IMAGE_TYPE_ENCRYPTION_KEY, IMAGE_TYPE_VENDOR, IMAGE_TYPE_SD_CARD},
+        {NULL},
 #else
 #error No target platform is defined
 #endif
