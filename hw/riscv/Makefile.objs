@@ -9,3 +9,4 @@ obj-y += sifive_u.o
 obj-y += sifive_uart.o
 obj-y += spike.o
 obj-y += virt.o
+obj-y += riscv_ranchu.o

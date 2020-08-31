@@ -562,6 +562,7 @@ add_subdirectory(android-qemu2-glue)
 
 set(ANDROID_QEMU_ARM_DEVICES "hw/pci/goldfish_address_space.c")
 set(ANDROID_QEMU_COMMON_DEVICES "${ANDROID_QEMU_ARM_DEVICES};hw/i386/pc_piix.c")
+set(ANDROID_QEMU_RISCV64_DEVICES "${ANDROID_QEMU_ARM_DEVICES}")
 
 # Darwin definitions
 set(ANDROID_QEMU_i386_DEVICES_darwin-x86_64
@@ -633,9 +634,14 @@ android_target_compile_definitions(
   "-D__USE_MINGW_ANSI_STDIO=1")
 
 # Linux settings
+set(ANDROID_QEMU_riscv64_DEVICES_linux-x86_64
+    "hvf-stub.c;accel/stubs/hax-stub.c;${ANDROID_QEMU_RISCV64_DEVICES}"
+)
+
 set(ANDROID_QEMU_i386_DEVICES_linux-x86_64
     "hvf-stub.c;accel/stubs/hax-stub.c;hw/i386/acpi-build.c;${ANDROID_QEMU_COMMON_DEVICES}"
 )
+
 set(ANDROID_QEMU_arm_DEVICES_linux-x86_64
     "hvf-stub.c;accel/stubs/hax-stub.c;${ANDROID_QEMU_ARM_DEVICES}")
 
@@ -851,6 +857,8 @@ endif()
 
   android_add_qemu_executable(riscv64
                               "${ANDROID_QEMU_riscv64_DEVICES_${ANDROID_TARGET_TAG}}")
+                          #android_add_qemu_headless_executable(
+                          #riscv64 "${ANDROID_QEMU_riscv64_DEVICES_${ANDROID_TARGET_TAG}}")
   # and the upstream qemu targets, if desired.
   if(QEMU_UPSTREAM)
     message(STATUS "Building upstream qemu.")

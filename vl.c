@@ -4638,7 +4638,7 @@ static int main_impl(int argc, char** argv, void (*on_main_loop_done)(void))
 #ifdef CONFIG_ANDROID
     if (android_qemu_mode || min_config_qemu_mode) {
         // setup device-tree callback
-#if defined(TARGET_AARCH64) || defined(TARGET_ARM) || defined(TARGET_MIPS)
+#if defined(TARGET_AARCH64) || defined(TARGET_ARM) || defined(TARGET_MIPS) || defined (TARGET_RISCV64)
         if (!feature_is_enabled(kFeature_DynamicPartition)) {
             qemu_device_tree_setup_callback(ranchu_device_tree_setup);
         }
