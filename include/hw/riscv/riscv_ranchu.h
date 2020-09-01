@@ -16,8 +16,8 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HW_RANCHU_H
-#define HW_RANCHU_H
+#ifndef HW_RISCV_RANCHU_H
+#define HW_RISCV_RANCHU_H
 
 #define TYPE_RISCV_RANCHU_BOARD "riscv.ranchu"
 #define RANCHU(obj) \
@@ -39,6 +39,11 @@ typedef struct {
 
 enum {
     UART0_IRQ = 10,
+    RANCHU_GOLDFISH_FB_IRQ,
+    RANCHU_GOLDFISH_AUDIO_IRQ,
+    RANCHU_GOLDFISH_EVDEV_IRQ,
+    RANCHU_GOLDFISH_PIPE_IRQ,
+    RANCHU_GOLDFISH_SYNC_IRQ,
     VIRTIO_IRQ = 1, /* 1 to 8 */
     VIRTIO_COUNT = 8,
     VIRTIO_NDEV = 10

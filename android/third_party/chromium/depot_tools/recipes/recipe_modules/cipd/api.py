@@ -181,6 +181,8 @@ class CIPDApi(recipe_api.RecipeApi):
         32: 'armv6',
         64: 'arm64',
       },
+      'riscv64': {
+        64: 'riscv64',
   }
 
   # pylint: disable=attribute-defined-outside-init

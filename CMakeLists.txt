@@ -870,6 +870,8 @@ endif()
       aarch64 "${ANDROID_QEMU_arm_DEVICES_${ANDROID_TARGET_TAG}}")
     android_add_qemu_upstream_executable(
       armel "${ANDROID_QEMU_arm_DEVICES_${ANDROID_TARGET_TAG}}")
+    android_add_qemu_upstream_executable(
+      riscv64 "${ANDROID_QEMU_riscv64_DEVICES_${ANDROID_TARGET_TAG}}")
   endif()
 
   # The tests currently work on linux only.

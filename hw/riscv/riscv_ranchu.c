@@ -33,7 +33,7 @@
 #include "hw/riscv/sifive_plic.h"
 #include "hw/riscv/sifive_clint.h"
 #include "hw/riscv/sifive_test.h"
-#include "hw/riscv/ranchu.h"
+#include "hw/riscv/riscv_ranchu.h"
 #include "chardev/char.h"
 #include "sysemu/arch_init.h"
 #include "sysemu/device_tree.h"
@@ -139,22 +139,27 @@ static void create_device(RISCVVirtState *s, void *fdt, enum MemoryType type)
         case RANCHU_GOLDFISH_FB:
             nodename = g_strdup_printf("/goldfish-fb@%" PRIx64, ranchu_memmap[type].base);
             compat = g_strdup_printf("google,goldfish-fb");
+            irq = RANCHU_GOLDFISH_FB_IRQ;
             break;
         case RANCHU_GOLDFISH_AUDIO:
             nodename = g_strdup_printf("/goldfish-audio@%" PRIx64, ranchu_memmap[type].base);
             compat = g_strdup_printf("google,goldfish-audio");
+            irq = RANCHU_GOLDFISH_AUDIO_IRQ;
             break;
         case RANCHU_GOLDFISH_SYNC:
             nodename = g_strdup_printf("/goldfish-sync@%" PRIx64, ranchu_memmap[type].base);
             compat = g_strdup_printf("google,goldfish-sync");
+            irq = RANCHU_GOLDFISH_SYNC_IRQ;
             break;
         case RANCHU_GOLDFISH_PIPE:
             nodename = g_strdup_printf("/goldfish-pipe@%" PRIx64, ranchu_memmap[type].base);
             compat = g_strdup_printf("google,goldfish-pipe");
+            irq = RANCHU_GOLDFISH_PIPE_IRQ;
             break;
         case RANCHU_GOLDFISH_EVDEV:
             nodename = g_strdup_printf("/goldfish-events-keypad@%" PRIx64, ranchu_memmap[type].base);
             compat = g_strdup_printf("google,goldfish-events-keypad");
+            irq = RANCHU_GOLDFISH_EVDEV_IRQ;
             break;
         default:
             return;

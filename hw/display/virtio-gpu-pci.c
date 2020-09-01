@@ -49,6 +49,11 @@ static void virtio_gpu_pci_realize(VirtIOPCIProxy *vpci_dev, Error **errp)
 
 #define VIRTIO_GPU_PCI_HOST_COHERENT_BAR_SIZE (1ULL << 32ULL)
 
+    struct virtio_pci_shm_cap shm_cap;
+    uint32_t mask32 = ~0;
+
+ 
+#ifdef CONFIG_VIRGL
     memory_region_init_ram_user_backed(
         &g->host_coherent_memory, OBJECT(g),
         "virtio-gpu-host-coherent",
@@ -57,10 +62,7 @@ static void virtio_gpu_pci_realize(VirtIOPCIProxy *vpci_dev, Error **errp)
     // Add shm cap to the guest
     // (Doesn't seem to be used in 5.4, but is a way to be fwd compatible
     // with newer kernels)
-    struct virtio_pci_shm_cap shm_cap;
-    uint32_t mask32 = ~0;
-
-    shm_cap.cap.cap_len = sizeof(shm_cap);
+   shm_cap.cap.cap_len = sizeof(shm_cap);
     shm_cap.cap.cfg_type = 8; // PciCapabilityType::SharedMemoryConfig
     shm_cap.cap.bar = vpci_dev->hostshm_mem_bar_idx;
 
@@ -79,6 +81,7 @@ static void virtio_gpu_pci_realize(VirtIOPCIProxy *vpci_dev, Error **errp)
     pci_register_bar(&vpci_dev->pci_dev, vpci_dev->hostshm_mem_bar_idx,
             PCI_BASE_ADDRESS_SPACE_MEMORY |
             PCI_BASE_ADDRESS_MEM_TYPE_64, &g->host_coherent_memory);
+#endif
 
     int offset = pci_add_capability(
         &vpci_dev->pci_dev, PCI_CAP_ID_VNDR, 0,

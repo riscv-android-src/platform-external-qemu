@@ -132,6 +132,7 @@ propertyFile_getTargetArch(const FileData* data) {
             { "arm64-v8a", "arm64" },
             { "mips32r5", "mips" },
             { "mips32r6", "mips" },
+            { "lp64d", "riscv64" },
         };
         size_t n;
         for (n = 0; n < sizeof(kData)/sizeof(kData[0]); ++n) {
@@ -440,6 +441,7 @@ emulator_getBackendSuffix(const char* targetArch)
         { "mips", "mips" },
         { "arm64", "arm64" },
         { "mips64", "mips64" },
+        { "riscv64", "riscv64" },
         // Add more if needed here.
     };
     size_t n;

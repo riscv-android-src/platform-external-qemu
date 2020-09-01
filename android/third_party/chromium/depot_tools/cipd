@@ -62,6 +62,9 @@ case "${UNAME}" in
       ARCH+=le
     fi
     ;;
+  riscv64)
+    ARCH=riscv64
+    ;;
   *)
     >&2 echo "UNKNOWN Machine architecture: ${UNAME}"
     exit 1

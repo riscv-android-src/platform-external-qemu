@@ -137,6 +137,9 @@ void generateAvdWithDefaults(StringView avdName,
     } else if (abi.str() == "x86_64") {
         cpuArch = "x86_64";
         cpuModel = "";
+    } else if ((abi.str() == "lp64d") || abi.str() == "riscv64") {
+        cpuArch = "riscv64";
+        cpuModel = "";
     }
 
     std::string sysDir =
