@@ -80,7 +80,7 @@ static void copy_le32_to_phys(hwaddr pa, uint32_t *rom, size_t len)
 
 static uint64_t identity_translate(void *opaque, uint64_t addr)
 {
-    return addr;
+    return addr+0x80000000;
 }
 
 static uint64_t load_kernel(const char *kernel_filename)
@@ -329,6 +329,15 @@ static void *create_fdt(RISCVVirtState *s, const struct MemmapEntry *memmap,
     qemu_fdt_setprop_string(fdt, "/chosen", "stdout-path", nodename);
     qemu_fdt_setprop_string(fdt, "/chosen", "bootargs", cmdline);
     g_free(nodename);
+
+    qemu_fdt_add_subnode(fdt, "/firmware");
+    nodename = g_strdup_printf("/firmware/android");
+    qemu_fdt_add_subnode(fdt, nodename);
+    qemu_fdt_setprop_string(fdt, nodename, "compatible", "android,firmware");
+    qemu_fdt_setprop_string(fdt, nodename, "hardware", "ranchu");
+    //qemu_fdt_setprop_string(fdt, nodename, "revision", MIPS_RANCHU_REV);
+    g_free(nodename);
+
 
     return fdt;
 }

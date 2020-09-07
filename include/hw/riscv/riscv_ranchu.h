@@ -23,7 +23,7 @@
 #define RANCHU(obj) \
     OBJECT_CHECK(RISCVVirtState, (obj), TYPE_RISCV_RANCHU_BOARD)
 
-enum { ROM_BASE = 0x1000 };
+enum { ROM_BASE = 0x1000};
 
 typedef struct {
     /*< private >*/
