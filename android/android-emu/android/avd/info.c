@@ -1449,12 +1449,14 @@ const char* const mips_device_id[] = {
     "1f03d800",
 };
 
+/* FIXME: RISC-V block addr not verified */
 const char* const riscv64_device_id[] = {
-    "0x20000000",
-    "0x20000200",
-    "0x20000400",
-    "0x20000600",
-    "0x20000800",
+    "20000000",
+    "20000a00",
+    "20000200",
+    "20000400",
+    "20000600",
+    "20000800",
 };
 
 static
