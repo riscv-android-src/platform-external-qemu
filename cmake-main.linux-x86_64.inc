@@ -1944,6 +1944,7 @@ hw/misc/ivshmem.c
 hw/misc/mmio_interface.c
 hw/net/vhost_net.c
 hw/net/virtio-net.c
+hw/pci-host/gpex.c
 hw/riscv/riscv_hart.c
 hw/riscv/riscv_htif.c
 hw/riscv/riscv_ranchu.c

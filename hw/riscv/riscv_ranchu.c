@@ -38,6 +38,8 @@
 #include "exec/address-spaces.h"
 #include "elf.h"
 #include "sysemu/ranchu.h"
+#include "hw/pci/pci.h"
+#include "hw/pci-host/gpex.h"
 
 enum MemoryType{
     RANCHU_CLINT = 0,
@@ -50,6 +52,9 @@ enum MemoryType{
     RANCHU_GOLDFISH_EVDEV,
     RANCHU_GOLDFISH_PIPE,
     RANCHU_GOLDFISH_SYNC,
+    RANCHU_PCIE_MMIO,
+    RANCHU_PCIE_PIO,
+    RANCHU_PCIE_ECAM,
     RANCHU_DRAM,
 };
 
@@ -59,16 +64,25 @@ static const struct MemmapEntry {
 } ranchu_memmap[] = {
     [RANCHU_CLINT]          =  {  0x2000000,    0x10000 },
     [RANCHU_PLIC]           =  {  0xc000000,  0x4000000 },
+    [RANCHU_PCIE_PIO]       =  {  0x3000000,    0x10000 },
     [RANCHU_UART0]          =  { 0x10000000,      0x100 },
     [RANCHU_GOLDFISH_FB]    =  { 0x10002000,     0x1000 },
     [RANCHU_GOLDFISH_AUDIO] =  { 0x10003000,     0x1000 },
     [RANCHU_GOLDFISH_EVDEV] =  { 0x10004000,     0x1000 },
     [RANCHU_GOLDFISH_PIPE]  =  { 0x10005000,     0x1000 },
     [RANCHU_GOLDFISH_SYNC]  =  { 0x10006000,     0x1000 },
-    [RANCHU_GOLDFISH_BATTERY]  =  { 0x10007000,     0x1000 },
+    [RANCHU_GOLDFISH_BATTERY]  =  { 0x10007000,  0x1000 },
     [RANCHU_VIRTIO]         =  { 0x20000000,      0x200 },
+    [RANCHU_PCIE_ECAM]      =  { 0x30000000, 0x10000000 },
+    [RANCHU_PCIE_MMIO]      =  { 0x40000000, 0x40000000 },
     [RANCHU_DRAM]           =  { 0x80000000,        0x0 },
 };
+
+/* PCIe high mmio for RV64, size is fixed but base depends on top of RAM */
+#define GiB     (INT64_C(1) << 30)
+#define VIRT64_HIGH_PCIE_MMIO_SIZE  (16 * GiB)
+
+static struct MemmapEntry virt_high_pcie_memmap;
 
 static void copy_le32_to_phys(hwaddr pa, uint32_t *rom, size_t len)
 {
@@ -235,6 +249,49 @@ static void create_device(RISCVVirtState *s, void *fdt, enum MemoryType type)
     g_free(compat);
 }
 
+static void create_pcie_irq_map(void *fdt, char *nodename,
+                                uint32_t plic_phandle)
+{
+    int pin, dev;
+    uint32_t
+        full_irq_map[GPEX_NUM_IRQS * GPEX_NUM_IRQS * FDT_INT_MAP_WIDTH] = {};
+    uint32_t *irq_map = full_irq_map;
+
+    /* This code creates a standard swizzle of interrupts such that
+     * each device's first interrupt is based on it's PCI_SLOT number.
+     * (See pci_swizzle_map_irq_fn())
+     *
+     * We only need one entry per interrupt in the table (not one per
+     * possible slot) seeing the interrupt-map-mask will allow the table
+     * to wrap to any number of devices.
+     */
+    for (dev = 0; dev < GPEX_NUM_IRQS; dev++) {
+        int devfn = dev * 0x8;
+
+        for (pin = 0; pin < GPEX_NUM_IRQS; pin++) {
+            int irq_nr = PCIE_IRQ + ((pin + PCI_SLOT(devfn)) % GPEX_NUM_IRQS);
+            int i = 0;
+
+            irq_map[i] = cpu_to_be32(devfn << 8);
+
+            i += FDT_PCI_ADDR_CELLS;
+            irq_map[i] = cpu_to_be32(pin + 1);
+
+            i += FDT_PCI_INT_CELLS;
+            irq_map[i++] = cpu_to_be32(plic_phandle);
+
+            i += FDT_PLIC_ADDR_CELLS;
+            irq_map[i] = cpu_to_be32(irq_nr);
+
+            irq_map += FDT_INT_MAP_WIDTH;
+        }
+    }
+    qemu_fdt_setprop(fdt, nodename, "interrupt-map",
+                     full_irq_map, sizeof(full_irq_map));
+
+    qemu_fdt_setprop_cells(fdt, nodename, "interrupt-map-mask",
+                           0x1800, 0, 0, 0x7);
+}
 
 static void *create_fdt(RISCVVirtState *s, const struct MemmapEntry *memmap,
     uint64_t mem_size, const char *cmdline)
@@ -344,7 +401,10 @@ static void *create_fdt(RISCVVirtState *s, const struct MemmapEntry *memmap,
     nodename = g_strdup_printf("/soc/interrupt-controller@%lx",
         (long)memmap[RANCHU_PLIC].base);
     qemu_fdt_add_subnode(fdt, nodename);
-    qemu_fdt_setprop_cell(fdt, nodename, "#interrupt-cells", 1);
+    qemu_fdt_setprop_cell(fdt, nodename,
+        "#address-cells", FDT_PLIC_ADDR_CELLS);
+    qemu_fdt_setprop_cell(fdt, nodename,
+        "#interrupt-cells", FDT_PLIC_INT_CELLS);
     qemu_fdt_setprop_string(fdt, nodename, "compatible", "riscv,plic0");
     qemu_fdt_setprop(fdt, nodename, "interrupt-controller", NULL, 0);
     qemu_fdt_setprop(fdt, nodename, "interrupts-extended",
@@ -374,6 +434,37 @@ static void *create_fdt(RISCVVirtState *s, const struct MemmapEntry *memmap,
         g_free(nodename);
     }
 
+    /* init pci fdt */
+    nodename = g_strdup_printf("/pci@%lx",
+        (long) memmap[RANCHU_PCIE_ECAM].base);
+    qemu_fdt_add_subnode(fdt, nodename);
+    qemu_fdt_setprop_cell(fdt, nodename, "#address-cells",
+        FDT_PCI_ADDR_CELLS);
+    qemu_fdt_setprop_cell(fdt, nodename, "#interrupt-cells",
+        FDT_PCI_INT_CELLS);
+    qemu_fdt_setprop_cell(fdt, nodename, "#size-cells", 0x2);
+    qemu_fdt_setprop_string(fdt, nodename, "compatible",
+        "pci-host-ecam-generic");
+    qemu_fdt_setprop_string(fdt, nodename, "device_type", "pci");
+    qemu_fdt_setprop_cell(fdt, nodename, "linux,pci-domain", 0);
+    qemu_fdt_setprop_cells(fdt, nodename, "bus-range", 0,
+        memmap[RANCHU_PCIE_ECAM].size / PCIE_MMCFG_SIZE_MIN - 1);
+    qemu_fdt_setprop(fdt, nodename, "dma-coherent", NULL, 0);
+    qemu_fdt_setprop_cells(fdt, nodename, "reg", 0,
+        memmap[RANCHU_PCIE_ECAM].base, 0, memmap[RANCHU_PCIE_ECAM].size);
+    qemu_fdt_setprop_sized_cells(fdt, nodename, "ranges",
+        1, FDT_PCI_RANGE_IOPORT, 2, 0,
+        2, memmap[RANCHU_PCIE_PIO].base, 2, memmap[RANCHU_PCIE_PIO].size,
+        1, FDT_PCI_RANGE_MMIO,
+        2, memmap[RANCHU_PCIE_MMIO].base,
+        2, memmap[RANCHU_PCIE_MMIO].base, 2, memmap[RANCHU_PCIE_MMIO].size,
+        1, FDT_PCI_RANGE_MMIO_64BIT,
+        2, virt_high_pcie_memmap.base,
+        2, virt_high_pcie_memmap.base, 2, virt_high_pcie_memmap.size);
+
+    create_pcie_irq_map(fdt, nodename, plic_phandle);
+    g_free(nodename);
+
     nodename = g_strdup_printf("/uart@%lx",
         (long)memmap[RANCHU_UART0].base);
     qemu_fdt_add_subnode(fdt, nodename);
@@ -392,6 +483,51 @@ static void *create_fdt(RISCVVirtState *s, const struct MemmapEntry *memmap,
 
 
     return fdt;
+}
+
+static inline DeviceState *gpex_pcie_init(RISCVVirtState *s, MemoryRegion *sys_mem,
+                                          hwaddr ecam_base, hwaddr ecam_size,
+                                          hwaddr mmio_base, hwaddr mmio_size,
+                                          hwaddr high_mmio_base,
+                                          hwaddr high_mmio_size,
+                                          hwaddr pio_base,
+                                          DeviceState *plic)
+{
+    DeviceState *dev;
+    MemoryRegion *ecam_alias, *ecam_reg;
+    MemoryRegion *mmio_alias, *high_mmio_alias, *mmio_reg;
+    qemu_irq irq;
+    int i;
+
+    dev = qdev_create(NULL, TYPE_GPEX_HOST);
+    qdev_init_nofail(dev);
+
+    ecam_alias = g_new0(MemoryRegion, 1);
+    ecam_reg = sysbus_mmio_get_region(SYS_BUS_DEVICE(dev), 0);
+    memory_region_init_alias(ecam_alias, OBJECT(dev), "pcie-ecam",
+                             ecam_reg, 0, ecam_size);
+    memory_region_add_subregion(get_system_memory(), ecam_base, ecam_alias);
+
+    mmio_alias = g_new0(MemoryRegion, 1);
+    mmio_reg = sysbus_mmio_get_region(SYS_BUS_DEVICE(dev), 1);
+    memory_region_init_alias(mmio_alias, OBJECT(dev), "pcie-mmio",
+                             mmio_reg, mmio_base, mmio_size);
+    memory_region_add_subregion(get_system_memory(), mmio_base, mmio_alias);
+
+    /* Map high MMIO space */
+    high_mmio_alias = g_new0(MemoryRegion, 1);
+    memory_region_init_alias(high_mmio_alias, OBJECT(dev), "pcie-mmio-high",
+                             mmio_reg, high_mmio_base, high_mmio_size);
+    memory_region_add_subregion(get_system_memory(), high_mmio_base,
+                                high_mmio_alias);
+
+    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 2, pio_base);
+    for (i = 0; i < GPEX_NUM_IRQS; i++) {
+        sysbus_connect_irq(SYS_BUS_DEVICE(dev), i, SIFIVE_PLIC(s->plic)->irqs[PCIE_IRQ + i]);
+        gpex_set_irq_num(GPEX_HOST(dev), i, PCIE_IRQ + i);
+    }
+
+    return dev;
 }
 
 static void riscv_ranchu_board_init(MachineState *machine)
@@ -428,9 +564,9 @@ static void riscv_ranchu_board_init(MachineState *machine)
     fdt = create_fdt(s, memmap, machine->ram_size, machine->kernel_cmdline);
 
     // FIXME: Can't bootup while enabling.
-    //if (device_tree_setup_func) {
-    //    device_tree_setup_func (fdt);
-    //}
+    if (device_tree_setup_func) {
+        device_tree_setup_func (fdt);
+    }
 
     /* create PLIC hart topology configuration string */
     plic_hart_config_len = (strlen(RANCHU_PLIC_HART_CONFIG) + 1) * smp_cpus;
@@ -459,6 +595,11 @@ static void riscv_ranchu_board_init(MachineState *machine)
     sifive_clint_create(memmap[RANCHU_CLINT].base,
         memmap[RANCHU_CLINT].size, smp_cpus,
         SIFIVE_SIP_BASE, SIFIVE_TIMECMP_BASE, SIFIVE_TIME_BASE);
+
+    virt_high_pcie_memmap.size = VIRT64_HIGH_PCIE_MMIO_SIZE;
+    virt_high_pcie_memmap.base = memmap[RANCHU_DRAM].base + machine->ram_size;
+    virt_high_pcie_memmap.base =
+        ROUND_UP(virt_high_pcie_memmap.base, virt_high_pcie_memmap.size);
 
     for (i = 0; i < VIRTIO_COUNT; i++) {
         sysbus_create_simple("virtio-mmio",
@@ -525,6 +666,16 @@ static void riscv_ranchu_board_init(MachineState *machine)
     cpu_physical_memory_write(ROM_BASE + sizeof(reset_vec),
         s->fdt, s->fdt_size);
 
+    gpex_pcie_init(s, system_memory,
+                   memmap[RANCHU_PCIE_ECAM].base,
+                   memmap[RANCHU_PCIE_ECAM].size,
+                   memmap[RANCHU_PCIE_MMIO].base,
+                   memmap[RANCHU_PCIE_MMIO].size,
+                   virt_high_pcie_memmap.base,
+                   virt_high_pcie_memmap.size,
+                   memmap[RANCHU_PCIE_PIO].base,
+                   DEVICE(s->plic));
+
     serial_mm_init(system_memory, memmap[RANCHU_UART0].base,
         0, SIFIVE_PLIC(s->plic)->irqs[UART0_IRQ], 399193,
         serial_hds[0], DEVICE_LITTLE_ENDIAN);
@@ -550,8 +701,9 @@ static const TypeInfo riscv_ranchu_board_device = {
 
 static void riscv_ranchu_board_machine_init(MachineClass *mc)
 {
-    mc->desc = "RISC-V RNACHU Board (Privileged spec v1.10)";
+    mc->desc = "RISC-V RANCHU Board (Privileged spec v1.10)";
     mc->init = riscv_ranchu_board_init;
+    mc->pci_allow_0_address = true;
     mc->max_cpus = 8; /* hardcoded limit in BBL */
 }
 
