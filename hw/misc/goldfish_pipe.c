@@ -1085,18 +1085,22 @@ static uint64_t pipe_dev_read(void* opaque, hwaddr offset, unsigned size) {
     GoldfishPipeState* s = (GoldfishPipeState*)opaque;
     PipeDevice* dev = s->dev;
     if (offset == PIPE_REG_VERSION) {
+        D("%s: offset = 0x%lx, pre-driver-ver=%d\n", __func__,offset,dev->driver_version);
         // PIPE_REG_VERSION is issued on probe, which means that
         // we should clean up all existing stale pipes.
         // This helps keep the right state on rebooting.
         dev->ops->close_all(dev, GOLDFISH_PIPE_CLOSE_REBOOT);
         reset_pipe_device(dev);
+        D("%s: offset = 0x%lx, post-driver-ver=%d\n", __func__,offset,dev->driver_version);
         if (dev->driver_version < MAX_SUPPORTED_DRIVER_VERSION) {
             // Old driver used to not report its version at all.
             dev->device_version = PIPE_DEVICE_VERSION_v1;
             dev->ops = &pipe_ops_v1;
+            D("%s: offset = 0x%lx, ver=%d\n", __func__,offset,dev->device_version);
         } else {
             dev->device_version = PIPE_DEVICE_VERSION;
             dev->ops = &pipe_ops_v2;
+            D("%s: offset = 0x%lx, Ver=%d\n", __func__,offset,dev->device_version);
         }
         return dev->device_version;
     }
@@ -1106,6 +1110,7 @@ static uint64_t pipe_dev_read(void* opaque, hwaddr offset, unsigned size) {
 static void pipe_dev_write_v1(PipeDevice* dev,
                               hwaddr offset,
                               uint64_t value) {
+    D("%s, offset=%ld, value=0x%lx\n", __func__, offset, value);
     switch (offset) {
     case PIPE_REG_CMD:
         pipeDevice_doCommand_v1(dev, value);
@@ -1221,6 +1226,7 @@ static void pipe_dev_write_v2(PipeDevice* dev,
         dev->write_start_us = pipe_dev_curr_time_us();
     }
 
+    D("%s, offset=%ld, value=0x%lx\n", __func__, offset, value);
     switch (offset) {
         case PIPE_REG_SIGNAL_BUFFER_HIGH:
             dev->signalled_pipe_buffer_addr = value << 32;
@@ -1839,7 +1845,7 @@ void goldfish_pipe_signal_wake(GoldfishHwPipe *pipe,
 
     PipeDevice *dev = pipe->dev;
 
-    DD("%s: id=%d channel=0x%llx flags=%d", __func__, (int)pipe->id,
+    DD("%s: id=%d channel=0x%lx flags=%d", __func__, (int)pipe->id,
        pipe->channel, flags);
 
     hwpipe_set_wanted(pipe, (unsigned char)flags);
@@ -1867,7 +1873,7 @@ GoldfishHwPipe* goldfish_pipe_lookup_by_id(int id) {
 
 void goldfish_pipe_close_from_host(GoldfishHwPipe *pipe)
 {
-    D("%s: id=%d channel=0x%llx (closed=%d)", __func__, (int)pipe->id,
+    D("%s: id=%d channel=0x%lx (closed=%d)", __func__, (int)pipe->id,
         pipe->channel, pipe->closed);
 
     if (!pipe->closed) {

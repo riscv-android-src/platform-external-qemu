@@ -75,6 +75,9 @@ char* emulator_getKernelParameters(const AndroidOptions* opts,
     // Disable apic timer check. b/33963880
     params.add("no_timer_check");
 
+    params.addFormat("security=selinux");
+    params.addFormat("android.boot.selinux=permissive");
+
     params.addFormat("androidboot.hardware=%s",
                      isQemu2 ? "ranchu" : "goldfish");
 

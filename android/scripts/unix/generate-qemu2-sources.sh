@@ -151,7 +151,7 @@ for LINE in $LINES; do
     fi
 done
 
-SUPPORTED_CPUS="i386 aarch64 arm mips"
+SUPPORTED_CPUS="i386 aarch64 arm mips riscv64"
 for CPU in $SUPPORTED_CPUS; do
   generate_trace target/$CPU/generated-helpers.c root tcg-helper-c trace-events
   generate_trace target/$CPU/generated-helpers.h root tcg-helper-h trace-events

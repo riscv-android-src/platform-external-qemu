@@ -47,6 +47,7 @@ enum MemoryType{
     RANCHU_UART0,
     RANCHU_VIRTIO,
     RANCHU_GOLDFISH_FB,
+    RANCHU_GOLDFISH_BATTERY,
     RANCHU_GOLDFISH_AUDIO,
     RANCHU_GOLDFISH_EVDEV,
     RANCHU_GOLDFISH_PIPE,
@@ -61,12 +62,13 @@ static const struct MemmapEntry {
     [RANCHU_CLINT]          =  {  0x2000000,    0x10000 },
     [RANCHU_PLIC]           =  {  0xc000000,  0x4000000 },
     [RANCHU_UART0]          =  { 0x10000000,      0x100 },
-    [RANCHU_VIRTIO]         =  { 0x10001000,     0x1000 },
     [RANCHU_GOLDFISH_FB]    =  { 0x10002000,     0x1000 },
     [RANCHU_GOLDFISH_AUDIO] =  { 0x10003000,     0x1000 },
     [RANCHU_GOLDFISH_EVDEV] =  { 0x10004000,     0x1000 },
     [RANCHU_GOLDFISH_PIPE]  =  { 0x10005000,     0x1000 },
     [RANCHU_GOLDFISH_SYNC]  =  { 0x10006000,     0x1000 },
+    [RANCHU_GOLDFISH_BATTERY]  =  { 0x10007000,     0x1000 },
+    [RANCHU_VIRTIO]         =  { 0x20000000,      0x200 },
     [RANCHU_DRAM]           =  { 0x80000000,        0x0 },
 };
 
@@ -78,22 +80,35 @@ static void copy_le32_to_phys(hwaddr pa, uint32_t *rom, size_t len)
     }
 }
 
+# define KERNEL_BOOT_ADDRESS 0x80200000
 static uint64_t identity_translate(void *opaque, uint64_t addr)
 {
-    return addr+0x80000000;
+    //return addr;
+    return addr+KERNEL_BOOT_ADDRESS;
 }
 
-static uint64_t load_kernel(const char *kernel_filename)
+target_ulong riscv_load_kernel(const char *kernel_filename, symbol_fn_t sym_cb)
 {
-    uint64_t kernel_entry, kernel_high;
+    uint64_t kernel_entry, kernel_low, kernel_high;
 
-    if (load_elf(kernel_filename, identity_translate, NULL,
-                 &kernel_entry, NULL, &kernel_high,
-                 0, ELF_MACHINE, 1, 0) < 0) {
-        error_report("qemu: could not load kernel '%s'", kernel_filename);
-        exit(1);
+    if (load_elf_ram_sym(kernel_filename, identity_translate, NULL,
+                &kernel_entry, &kernel_low, &kernel_high, 0,
+                EM_RISCV, 1, 0, NULL, true, sym_cb) > 0) {
+        return kernel_low;
     }
-    return kernel_entry;
+
+    if (load_uimage_as(kernel_filename, &kernel_entry, NULL, NULL,
+                NULL, NULL, NULL) > 0) {
+        return kernel_entry;
+    }
+
+    if (load_image_targphys_as(kernel_filename, KERNEL_BOOT_ADDRESS,
+                ram_size, NULL) > 0) {
+        return KERNEL_BOOT_ADDRESS;
+    }
+
+    error_report("could not load kernel '%s'", kernel_filename);
+    exit(1);
 }
 
 static hwaddr load_initrd(const char *filename, uint64_t mem_size,
@@ -124,6 +139,27 @@ static hwaddr load_initrd(const char *filename, uint64_t mem_size,
     return *start + size;
 }
 
+target_ulong riscv_load_firmware(const char *firmware_filename,
+        hwaddr firmware_load_addr,
+        symbol_fn_t sym_cb)
+{
+    uint64_t firmware_entry, firmware_start, firmware_end;
+
+    if (load_elf_ram_sym(firmware_filename, NULL, NULL,
+                &firmware_entry, &firmware_start, &firmware_end,
+                0, EM_RISCV, 1, 0, NULL, true, sym_cb) > 0) {
+        return firmware_entry;
+    }
+
+    if (load_image_targphys_as(firmware_filename, firmware_load_addr,
+                ram_size, NULL) > 0) {
+        return firmware_load_addr;
+    }
+
+    error_report("could not load firmware '%s'", firmware_filename);
+    exit(1);
+}
+
 static QemuDeviceTreeSetupFunc device_tree_setup_func = NULL;
 void qemu_device_tree_setup_callback(QemuDeviceTreeSetupFunc setup_func)
 {
@@ -134,29 +170,43 @@ static void create_device(RISCVVirtState *s, void *fdt, enum MemoryType type)
 {
     char * nodename = NULL;
     char * compat = NULL;
+    char * dev_name = NULL;
     int irq = -1;
+
     switch (type) {
         case RANCHU_GOLDFISH_FB:
-            nodename = g_strdup_printf("/goldfish-fb@%" PRIx64, ranchu_memmap[type].base);
+            nodename = g_strdup_printf("/goldfish_fb@%" PRIx64, ranchu_memmap[type].base);
             compat = g_strdup_printf("google,goldfish-fb");
+            dev_name = "goldfish_fb";
             irq = RANCHU_GOLDFISH_FB_IRQ;
             break;
         case RANCHU_GOLDFISH_AUDIO:
-            nodename = g_strdup_printf("/goldfish-audio@%" PRIx64, ranchu_memmap[type].base);
+            dev_name = "goldfish_audio";
+            nodename = g_strdup_printf("/goldfish_audio@%" PRIx64, ranchu_memmap[type].base);
             compat = g_strdup_printf("google,goldfish-audio");
             irq = RANCHU_GOLDFISH_AUDIO_IRQ;
             break;
+        case RANCHU_GOLDFISH_BATTERY:
+            dev_name = "goldfish_battery";
+            nodename = g_strdup_printf("/goldfish_battery@%" PRIx64, ranchu_memmap[type].base);
+            compat = g_strdup_printf("google,goldfish-battery");
+            irq = RANCHU_GOLDFISH_BATTERY_IRQ;
+            break;
+
         case RANCHU_GOLDFISH_SYNC:
-            nodename = g_strdup_printf("/goldfish-sync@%" PRIx64, ranchu_memmap[type].base);
+            dev_name = "goldfish_sync";
+            nodename = g_strdup_printf("/goldfish_sync@%" PRIx64, ranchu_memmap[type].base);
             compat = g_strdup_printf("google,goldfish-sync");
             irq = RANCHU_GOLDFISH_SYNC_IRQ;
             break;
         case RANCHU_GOLDFISH_PIPE:
-            nodename = g_strdup_printf("/goldfish-pipe@%" PRIx64, ranchu_memmap[type].base);
-            compat = g_strdup_printf("google,goldfish-pipe");
+            dev_name = "goldfish_pipe";
+            nodename = g_strdup_printf("/goldfish_pipe@%" PRIx64, ranchu_memmap[type].base);
+            compat = g_strdup_printf("google,android-pipe");
             irq = RANCHU_GOLDFISH_PIPE_IRQ;
             break;
         case RANCHU_GOLDFISH_EVDEV:
+            dev_name = "goldfish-events";
             nodename = g_strdup_printf("/goldfish-events-keypad@%" PRIx64, ranchu_memmap[type].base);
             compat = g_strdup_printf("google,goldfish-events-keypad");
             irq = RANCHU_GOLDFISH_EVDEV_IRQ;
@@ -164,22 +214,29 @@ static void create_device(RISCVVirtState *s, void *fdt, enum MemoryType type)
         default:
             return;
     }
+
     qemu_fdt_add_subnode(fdt, nodename);
     qemu_fdt_setprop_string(fdt, nodename, "compatible", compat);
     qemu_fdt_setprop_cells(fdt, nodename, "reg",
-        0x1, ranchu_memmap[type].base,
-        0x2, ranchu_memmap[type].size);
+        0x0, ranchu_memmap[type].base,
+        0x0, ranchu_memmap[type].size);
 
     //qemu_fdt_setprop_cell(fdt, nodename, "clock-frequency", 3686400);
 
+    char *plic_nodename = g_strdup_printf("/soc/interrupt-controller@%lx", (long)ranchu_memmap[RANCHU_PLIC].base);
+    int plic_phandle = qemu_fdt_get_phandle(fdt, plic_nodename);
+
     if (irq != -1) {
-        //qemu_fdt_setprop_cells(fdt, nodename, "interrupt-parent", plic_phandle);
+        qemu_fdt_setprop_cells(fdt, nodename, "interrupt-parent", plic_phandle);
         qemu_fdt_setprop_cells(fdt, nodename, "interrupts", irq);
     }
+    sysbus_create_simple(dev_name, ranchu_memmap[type].base, SIFIVE_PLIC(s->plic)->irqs[irq]);
 
+    g_free(plic_nodename);
     g_free(nodename);
     g_free(compat);
 }
+
 
 static void *create_fdt(RISCVVirtState *s, const struct MemmapEntry *memmap,
     uint64_t mem_size, const char *cmdline)
@@ -201,6 +258,11 @@ static void *create_fdt(RISCVVirtState *s, const struct MemmapEntry *memmap,
     qemu_fdt_setprop_string(fdt, "/", "compatible", "riscv-virtio");
     qemu_fdt_setprop_cell(fdt, "/", "#size-cells", 0x2);
     qemu_fdt_setprop_cell(fdt, "/", "#address-cells", 0x2);
+
+    qemu_fdt_add_subnode(fdt, "/firmware");
+    qemu_fdt_add_subnode(fdt, "/firmware/android");
+    qemu_fdt_setprop_string(fdt, "/firmware/android", "compatible", "android,firmware");
+    qemu_fdt_setprop_string(fdt, "/firmware/android", "hardware", "ranchu");
 
     qemu_fdt_add_subnode(fdt, "/soc");
     qemu_fdt_setprop(fdt, "/soc", "ranges", NULL, 0);
@@ -306,9 +368,9 @@ static void *create_fdt(RISCVVirtState *s, const struct MemmapEntry *memmap,
             (long)(memmap[RANCHU_VIRTIO].base + i * memmap[RANCHU_VIRTIO].size));
         qemu_fdt_add_subnode(fdt, nodename);
         qemu_fdt_setprop_string(fdt, nodename, "compatible", "virtio,mmio");
-        qemu_fdt_setprop_cells(fdt, nodename, "reg",
-            0x0, memmap[RANCHU_VIRTIO].base + i * memmap[RANCHU_VIRTIO].size,
-            0x0, memmap[RANCHU_VIRTIO].size);
+        qemu_fdt_setprop_sized_cells(fdt, nodename, "reg",
+            0x2, memmap[RANCHU_VIRTIO].base + i * memmap[RANCHU_VIRTIO].size,
+            0x2, memmap[RANCHU_VIRTIO].size);
         qemu_fdt_setprop_cells(fdt, nodename, "interrupt-parent", plic_phandle);
         qemu_fdt_setprop_cells(fdt, nodename, "interrupts", VIRTIO_IRQ + i);
         g_free(nodename);
@@ -328,14 +390,6 @@ static void *create_fdt(RISCVVirtState *s, const struct MemmapEntry *memmap,
     qemu_fdt_add_subnode(fdt, "/chosen");
     qemu_fdt_setprop_string(fdt, "/chosen", "stdout-path", nodename);
     qemu_fdt_setprop_string(fdt, "/chosen", "bootargs", cmdline);
-    g_free(nodename);
-
-    qemu_fdt_add_subnode(fdt, "/firmware");
-    nodename = g_strdup_printf("/firmware/android");
-    qemu_fdt_add_subnode(fdt, nodename);
-    qemu_fdt_setprop_string(fdt, nodename, "compatible", "android,firmware");
-    qemu_fdt_setprop_string(fdt, nodename, "hardware", "ranchu");
-    //qemu_fdt_setprop_string(fdt, nodename, "revision", MIPS_RANCHU_REV);
     g_free(nodename);
 
 
@@ -375,29 +429,72 @@ static void riscv_ranchu_board_init(MachineState *machine)
     /* create device tree */
     fdt = create_fdt(s, memmap, machine->ram_size, machine->kernel_cmdline);
 
-    if (device_tree_setup_func) {
-        device_tree_setup_func (fdt);
+    // FIXME: Can't bootup while enabling.
+    //if (device_tree_setup_func) {
+    //    device_tree_setup_func (fdt);
+    //}
+
+    /* create PLIC hart topology configuration string */
+    plic_hart_config_len = (strlen(RANCHU_PLIC_HART_CONFIG) + 1) * smp_cpus;
+    plic_hart_config = g_malloc0(plic_hart_config_len);
+    for (i = 0; i < smp_cpus; i++) {
+        if (i != 0) {
+            strncat(plic_hart_config, ",", plic_hart_config_len);
+        }
+        strncat(plic_hart_config, RANCHU_PLIC_HART_CONFIG, plic_hart_config_len);
+        plic_hart_config_len -= (strlen(RANCHU_PLIC_HART_CONFIG) + 1);
     }
 
+
+    /* MMIO */
+    s->plic = sifive_plic_create(memmap[RANCHU_PLIC].base,
+        plic_hart_config,
+        RANCHU_PLIC_NUM_SOURCES,
+        RANCHU_PLIC_NUM_PRIORITIES,
+        RANCHU_PLIC_PRIORITY_BASE,
+        RANCHU_PLIC_PENDING_BASE,
+        RANCHU_PLIC_ENABLE_BASE,
+        RANCHU_PLIC_ENABLE_STRIDE,
+        RANCHU_PLIC_CONTEXT_BASE,
+        RANCHU_PLIC_CONTEXT_STRIDE,
+        memmap[RANCHU_PLIC].size);
+    sifive_clint_create(memmap[RANCHU_CLINT].base,
+        memmap[RANCHU_CLINT].size, smp_cpus,
+        SIFIVE_SIP_BASE, SIFIVE_TIMECMP_BASE, SIFIVE_TIME_BASE);
+
+    for (i = 0; i < VIRTIO_COUNT; i++) {
+        sysbus_create_simple("virtio-mmio",
+            memmap[RANCHU_VIRTIO].base + i * memmap[RANCHU_VIRTIO].size,
+            SIFIVE_PLIC(s->plic)->irqs[VIRTIO_IRQ + i]);
+    }
+
+
     create_device(s, fdt, RANCHU_GOLDFISH_FB);
-    create_device(s, fdt, RANCHU_GOLDFISH_EVDEV);
     create_device(s, fdt, RANCHU_GOLDFISH_PIPE);
     create_device(s, fdt, RANCHU_GOLDFISH_SYNC);
     create_device(s, fdt, RANCHU_GOLDFISH_AUDIO);
+    create_device(s, fdt, RANCHU_GOLDFISH_EVDEV);
+    create_device(s, fdt, RANCHU_GOLDFISH_BATTERY);
 
     /* boot rom */
     memory_region_init_ram(boot_rom, NULL, "riscv_ranchu_board.bootrom",
                            s->fdt_size + 0x2000, &error_fatal);
     memory_region_add_subregion(system_memory, 0x0, boot_rom);
 
+    if (machine->firmware) {
+        /* -bios set.  */
+        riscv_load_firmware (machine->firmware, memmap[RANCHU_DRAM].base, NULL);
+    }
+
     if (machine->kernel_filename) {
-        uint64_t kernel_entry = load_kernel(machine->kernel_filename);
+        uint64_t kernel_entry = riscv_load_kernel(machine->kernel_filename, NULL);
 
         if (machine->initrd_filename) {
             hwaddr start;
             hwaddr end = load_initrd(machine->initrd_filename,
                                      machine->ram_size, kernel_entry,
                                      &start);
+            printf ("kernel@%lx, initrd@%lx\n", kernel_entry, start);
             qemu_fdt_setprop_cell(fdt, "/chosen",
                                   "linux,initrd-start", start);
             qemu_fdt_setprop_cell(fdt, "/chosen", "linux,initrd-end",
@@ -429,39 +526,6 @@ static void riscv_ranchu_board_init(MachineState *machine)
     qemu_fdt_dumpdtb(s->fdt, s->fdt_size);
     cpu_physical_memory_write(ROM_BASE + sizeof(reset_vec),
         s->fdt, s->fdt_size);
-
-    /* create PLIC hart topology configuration string */
-    plic_hart_config_len = (strlen(RANCHU_PLIC_HART_CONFIG) + 1) * smp_cpus;
-    plic_hart_config = g_malloc0(plic_hart_config_len);
-    for (i = 0; i < smp_cpus; i++) {
-        if (i != 0) {
-            strncat(plic_hart_config, ",", plic_hart_config_len);
-        }
-        strncat(plic_hart_config, RANCHU_PLIC_HART_CONFIG, plic_hart_config_len);
-        plic_hart_config_len -= (strlen(RANCHU_PLIC_HART_CONFIG) + 1);
-    }
-
-    /* MMIO */
-    s->plic = sifive_plic_create(memmap[RANCHU_PLIC].base,
-        plic_hart_config,
-        RANCHU_PLIC_NUM_SOURCES,
-        RANCHU_PLIC_NUM_PRIORITIES,
-        RANCHU_PLIC_PRIORITY_BASE,
-        RANCHU_PLIC_PENDING_BASE,
-        RANCHU_PLIC_ENABLE_BASE,
-        RANCHU_PLIC_ENABLE_STRIDE,
-        RANCHU_PLIC_CONTEXT_BASE,
-        RANCHU_PLIC_CONTEXT_STRIDE,
-        memmap[RANCHU_PLIC].size);
-    sifive_clint_create(memmap[RANCHU_CLINT].base,
-        memmap[RANCHU_CLINT].size, smp_cpus,
-        SIFIVE_SIP_BASE, SIFIVE_TIMECMP_BASE, SIFIVE_TIME_BASE);
-
-    for (i = 0; i < VIRTIO_COUNT; i++) {
-        sysbus_create_simple("virtio-mmio",
-            memmap[RANCHU_VIRTIO].base + i * memmap[RANCHU_VIRTIO].size,
-            SIFIVE_PLIC(s->plic)->irqs[VIRTIO_IRQ + i]);
-    }
 
     serial_mm_init(system_memory, memmap[RANCHU_UART0].base,
         0, SIFIVE_PLIC(s->plic)->irqs[UART0_IRQ], 399193,
