@@ -20,8 +20,13 @@ target_compile_definitions(
 if(BUILDING_FOR_AARCH64)
   add_dependencies(emulator qemu-system-aarch64 qemu-system-aarch64-headless)
 elseif(OPTION_MINBUILD)
-  add_dependencies(emulator qemu-system-x86_64 qemu-system-aarch64
-                   qemu-system-x86_64-headless qemu-system-aarch64-headless)
+  add_dependencies(emulator
+                   qemu-system-x86_64
+                   qemu-system-aarch64
+                   qemu-system-riscv64
+                   qemu-system-x86_64-headless
+                   qemu-system-aarch64-headless
+                   qemu-system-riscv64-headless)
 else()
   add_dependencies(
     emulator
@@ -29,9 +34,11 @@ else()
     qemu-system-x86_64
     qemu-system-armel
     qemu-system-aarch64
+    qemu-system-riscv64
     qemu-system-armel-headless
     qemu-system-x86_64-headless
     qemu-system-aarch64-headless
+    qemu-system-riscv64-headless
     emulator-crash-service)
 endif()
 
