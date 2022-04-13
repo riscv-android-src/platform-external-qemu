@@ -905,15 +905,15 @@ if(NOT OPTION_AEMU_LIBS_ONLY)
       x86_64 "${ANDROID_QEMU_i386_DEVICES_${ANDROID_TARGET_TAG}}")
     android_add_qemu_headless_executable(
       x86_64 "${ANDROID_QEMU_i386_DEVICES_${ANDROID_TARGET_TAG}}")
+    android_add_qemu_executable(
+      riscv64 "${ANDROID_QEMU_riscv64_DEVICES_${ANDROID_TARGET_TAG}}")
+    android_add_qemu_headless_executable(
+      riscv64 "${ANDROID_QEMU_riscv64_DEVICES_${ANDROID_TARGET_TAG}}")
   endif()
     android_add_qemu_executable(
       aarch64 "${ANDROID_QEMU_arm_DEVICES_${ANDROID_TARGET_TAG}}")
     android_add_qemu_headless_executable(
       aarch64 "${ANDROID_QEMU_arm_DEVICES_${ANDROID_TARGET_TAG}}")
-    android_add_qemu_executable(
-      riscv64 "${ANDROID_QEMU_riscv64_DEVICES_${ANDROID_TARGET_TAG}}")
-    android_add_qemu_headless_executable(
-      riscv64 "${ANDROID_QEMU_riscv64_DEVICES_${ANDROID_TARGET_TAG}}")
 
   if(NOT OPTION_MINBUILD)
     android_add_qemu_executable(
