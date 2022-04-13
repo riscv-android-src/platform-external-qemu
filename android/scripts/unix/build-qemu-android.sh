@@ -24,6 +24,7 @@ shell_import utils/package_builder.shi
 shell_import utils/package_list_parser.shi
 
 DEFAULT_INSTALL_SUBDIR=qemu-android
+
 PROGRAM_PARAMETERS="<qemu-android>"
 
 PROGRAM_DESCRIPTION=\
