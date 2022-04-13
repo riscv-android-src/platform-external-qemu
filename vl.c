@@ -4660,7 +4660,7 @@ static int main_impl(int argc, char** argv, void (*on_main_loop_done)(void))
             qemu_device_tree_setup_callback(ranchu_device_tree_setup);
             qemu_device_tree_setup_callback2(ranchu_device_tree_setup);
         }
-#elif defined(TARGET_MIPS) || defined (TARGET_RISCV64)
+#elif defined(TARGET_MIPS) || defined(TARGET_RISCV64)
         if (!feature_is_enabled(kFeature_DynamicPartition)) {
             qemu_device_tree_setup_callback(ranchu_device_tree_setup);
         }

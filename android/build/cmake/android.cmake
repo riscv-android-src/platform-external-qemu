@@ -1411,7 +1411,6 @@ function(android_build_qemu_variant)
   cmake_parse_arguments(qemu_build "${options}" "${oneValueArgs}"
                         "${multiValueArgs}" ${ARGN})
 
-                    message(STATUS "qemu_build_CPU ${qemu_build_CPU}")
   # translate various names.. because of inconsistent naming in the code base..
   if(qemu_build_CPU STREQUAL "x86_64")
     set(CPU "i386")
@@ -1434,7 +1433,7 @@ function(android_build_qemu_variant)
     set(QEMU_AARCH "riscv64")
     set(CONFIG_AARCH "riscv64")
   else()
-    message(FATAL_ERROR "Unknown cpu type. ${qemu_build_CPU}")
+    message(FATAL_ERROR "Unknown cpu type.")
   endif()
 
   # Workaround b/121393952, older cmake does not have proper object archives
