@@ -47,6 +47,7 @@ TARGETS_OF_INTEREST = [
     "qemu-system-arm",
     "qemu-system-i386",
     "qemu-system-x86_64",
+    "qemu-system-riscv64"
 ]
 
 
