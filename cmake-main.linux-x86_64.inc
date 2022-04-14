@@ -9,8 +9,8 @@
 #   qemu-system-aarch64
 #   qemu-system-arm
 #   qemu-system-i386
-#   qemu-system-x86_64
 #   qemu-system-riscv64
+#   qemu-system-x86_64
 
 ## TARGET: qemu2-shared ##
 set(qemu2-shared_sources ""
@@ -1709,6 +1709,114 @@ set(qemu-system-i386_generated_sources ""
 ${ANDROID_AUTOGEN}/trace/generated-helpers.c)
 set(qemu-system-i386_dep libqemuutil qemu2-shared)
 
+## TARGET: qemu-system-riscv64 ##
+set(qemu-system-riscv64_sources ""
+accel/accel.c
+accel/stubs/gvm-stub.c
+accel/stubs/hvf-stub.c
+accel/stubs/kvm-stub.c
+accel/stubs/whpx-stub.c
+accel/tcg/cpu-exec-common.c
+accel/tcg/cpu-exec.c
+accel/tcg/cputlb.c
+accel/tcg/tcg-all.c
+accel/tcg/tcg-runtime-gvec.c
+accel/tcg/tcg-runtime.c
+accel/tcg/translate-all.c
+accel/tcg/translator.c
+arch_init.c
+balloon.c
+cpus.c
+disas.c
+disas/riscv.c
+dump.c
+exec.c
+fpu/softfloat.c
+gdbstub.c
+hw/acpi/acpi-stub.c
+hw/acpi/ipmi-stub.c
+hw/block/dataplane/virtio-blk.c
+hw/block/vhost-user-blk.c
+hw/block/virtio-blk.c
+hw/char/goldfish_tty.c
+hw/char/virtio-serial-bus.c
+hw/core/generic-loader.c
+hw/core/null-machine.c
+hw/display/vga.c
+hw/display/virtio-gpu-3d.c
+hw/display/virtio-gpu-pci.c
+hw/display/virtio-gpu.c
+hw/input/goldfish_events.c
+hw/input/goldfish_events_common.c
+hw/input/goldfish_rotary.c
+hw/intc/goldfish_pic.c
+hw/misc/goldfish_battery.c
+hw/misc/goldfish_pipe.c
+hw/misc/goldfish_pstore.c
+hw/misc/goldfish_sync.c
+hw/misc/ivshmem.c
+hw/misc/mmio_interface.c
+hw/net/vhost_net.c
+hw/net/virtio-net.c
+hw/pci-host/gpex.c
+hw/riscv/riscv_hart.c
+hw/riscv/riscv_htif.c
+hw/riscv/riscv_ranchu.c
+hw/riscv/sifive_clint.c
+hw/riscv/sifive_e.c
+hw/riscv/sifive_plic.c
+hw/riscv/sifive_prci.c
+hw/riscv/sifive_test.c
+hw/riscv/sifive_u.c
+hw/riscv/sifive_uart.c
+hw/riscv/spike.c
+hw/riscv/virt.c
+hw/scsi/vhost-scsi-common.c
+hw/scsi/vhost-scsi.c
+hw/scsi/vhost-user-scsi.c
+hw/scsi/virtio-scsi-dataplane.c
+hw/scsi/virtio-scsi.c
+hw/smbios/smbios_type_38-stub.c
+hw/timer/goldfish_timer.c
+hw/vfio/common.c
+hw/vfio/display.c
+hw/vfio/pci-quirks.c
+hw/vfio/pci.c
+hw/vfio/platform.c
+hw/vfio/spapr.c
+hw/virtio/vhost-backend.c
+hw/virtio/vhost-user.c
+hw/virtio/vhost.c
+hw/virtio/virtio-balloon.c
+hw/virtio/virtio-crypto-pci.c
+hw/virtio/virtio-crypto.c
+hw/virtio/virtio.c
+ioport.c
+memory.c
+memory_mapping.c
+migration/ram.c
+monitor.c
+numa.c
+qtest.c
+target/riscv/cpu.c
+target/riscv/fpu_helper.c
+target/riscv/gdbstub.c
+target/riscv/helper.c
+target/riscv/kvm-stub.c
+target/riscv/op_helper.c
+target/riscv/pmp.c
+target/riscv/translate.c
+tcg/optimize.c
+tcg/tcg-common.c
+tcg/tcg-op-gvec.c
+tcg/tcg-op-vec.c
+tcg/tcg-op.c
+tcg/tcg.c
+trace/control-target.c)
+set(qemu-system-riscv64_generated_sources ""
+${ANDROID_AUTOGEN}/trace/generated-helpers.c)
+set(qemu-system-riscv64_dep libqemuutil qemu2-shared)
+
 ## TARGET: qemu-system-x86_64 ##
 set(qemu-system-x86_64_sources ""
 accel/accel.c
@@ -1897,113 +2005,6 @@ set(qemu-system-x86_64_generated_sources ""
 ${ANDROID_AUTOGEN}/trace/generated-helpers.c)
 set(qemu-system-x86_64_dep libqemuutil qemu2-shared)
 
-## TARGET: qemu-system-riscv64 ##
-set(qemu-system-riscv64_sources ""
-accel/accel.c
-accel/stubs/gvm-stub.c
-accel/stubs/kvm-stub.c
-accel/stubs/whpx-stub.c
-accel/tcg/cpu-exec.c
-accel/tcg/cpu-exec-common.c
-accel/tcg/cputlb.c
-accel/tcg/tcg-all.c
-accel/tcg/tcg-runtime.c
-accel/tcg/tcg-runtime-gvec.c
-accel/tcg/translate-all.c
-accel/tcg/translator.c
-arch_init.c
-balloon.c
-cpus.c
-disas.c
-disas/riscv.c
-dump.c
-exec.c
-fpu/softfloat.c
-gdbstub.c
-hw/acpi/acpi-stub.c
-hw/block/dataplane/virtio-blk.c
-hw/block/vhost-user-blk.c
-hw/block/virtio-blk.c
-hw/char/goldfish_tty.c
-hw/char/virtio-serial-bus.c
-hw/core/generic-loader.c
-hw/core/null-machine.c
-hw/display/vga.c
-hw/display/virtio-gpu-3d.c
-hw/display/virtio-gpu.c
-hw/display/virtio-gpu-pci.c
-hw/input/goldfish_events.c
-hw/input/goldfish_events_common.c
-hw/input/goldfish_rotary.c
-hw/intc/goldfish_pic.c
-hw/misc/goldfish_battery.c
-hw/misc/goldfish_pipe.c
-hw/misc/goldfish_pstore.c
-hw/misc/goldfish_sync.c
-hw/misc/ivshmem.c
-hw/misc/mmio_interface.c
-hw/net/vhost_net.c
-hw/net/virtio-net.c
-hw/pci-host/gpex.c
-hw/riscv/riscv_hart.c
-hw/riscv/riscv_htif.c
-hw/riscv/riscv_ranchu.c
-hw/riscv/sifive_clint.c
-hw/riscv/sifive_e.c
-hw/riscv/sifive_plic.c
-hw/riscv/sifive_prci.c
-hw/riscv/sifive_test.c
-hw/riscv/sifive_uart.c
-hw/riscv/sifive_u.c
-hw/riscv/spike.c
-hw/riscv/virt.c
-hw/scsi/vhost-scsi.c
-hw/scsi/vhost-scsi-common.c
-hw/scsi/vhost-user-scsi.c
-hw/scsi/virtio-scsi.c
-hw/scsi/virtio-scsi-dataplane.c
-hw/smbios/smbios_type_38-stub.c
-hw/timer/goldfish_timer.c
-hw/vfio/common.c
-hw/vfio/display.c
-hw/vfio/pci.c
-hw/vfio/pci-quirks.c
-hw/vfio/platform.c
-hw/vfio/spapr.c
-hw/virtio/vhost-backend.c
-hw/virtio/vhost.c
-hw/virtio/vhost-user.c
-hw/virtio/vhost-vsock.c
-hw/virtio/virtio-balloon.c
-hw/virtio/virtio.c
-hw/virtio/virtio-crypto.c
-hw/virtio/virtio-crypto-pci.c
-ioport.c
-memory.c
-memory_mapping.c
-migration/ram.c
-monitor.c
-numa.c
-qtest.c
-target/riscv/cpu.c
-target/riscv/fpu_helper.c
-target/riscv/gdbstub.c
-target/riscv/helper.c
-target/riscv/kvm-stub.c
-target/riscv/op_helper.c
-target/riscv/pmp.c
-target/riscv/translate.c
-tcg/optimize.c
-tcg/tcg.c
-tcg/tcg-common.c
-tcg/tcg-op.c
-tcg/tcg-op-gvec.c
-tcg/tcg-op-vec.c
-trace/control-target.c)
-set(qemu-system-riscv64_generated_sources ""
-${ANDROID_AUTOGEN}/trace/generated-helpers.c)
-set(qemu-system-riscv64_dep libqemuutil qemu2-shared)
-
 set_source_files_properties(${ANDROID_AUTOGEN}/hw/9pfs/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/hw/9pfs")
 
 set_source_files_properties(${ANDROID_AUTOGEN}/hw/alpha/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/hw/alpha")
@@ -2068,7 +2069,7 @@ ${ANDROID_AUTOGEN}/chardev/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOG
 set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/crypto/aes.c ${ANDROID_QEMU2_TOP_DIR}/crypto/afsplit.c ${ANDROID_QEMU2_TOP_DIR}/crypto/block-luks.c ${ANDROID_QEMU2_TOP_DIR}/crypto/block-qcow.c ${ANDROID_QEMU2_TOP_DIR}/crypto/block.c ${ANDROID_QEMU2_TOP_DIR}/crypto/cipher.c ${ANDROID_QEMU2_TOP_DIR}/crypto/desrfb.c ${ANDROID_QEMU2_TOP_DIR}/crypto/hash-glib.c ${ANDROID_QEMU2_TOP_DIR}/crypto/hash.c ${ANDROID_QEMU2_TOP_DIR}/crypto/hmac-glib.c ${ANDROID_QEMU2_TOP_DIR}/crypto/hmac.c ${ANDROID_QEMU2_TOP_DIR}/crypto/init.c ${ANDROID_QEMU2_TOP_DIR}/crypto/ivgen-essiv.c ${ANDROID_QEMU2_TOP_DIR}/crypto/ivgen-plain.c ${ANDROID_QEMU2_TOP_DIR}/crypto/ivgen-plain64.c ${ANDROID_QEMU2_TOP_DIR}/crypto/ivgen.c ${ANDROID_QEMU2_TOP_DIR}/crypto/pbkdf-stub.c ${ANDROID_QEMU2_TOP_DIR}/crypto/pbkdf.c ${ANDROID_QEMU2_TOP_DIR}/crypto/random-platform.c ${ANDROID_QEMU2_TOP_DIR}/crypto/secret.c ${ANDROID_QEMU2_TOP_DIR}/crypto/tlscreds.c ${ANDROID_QEMU2_TOP_DIR}/crypto/tlscredsanon.c ${ANDROID_QEMU2_TOP_DIR}/crypto/tlscredsx509.c ${ANDROID_QEMU2_TOP_DIR}/crypto/tlssession.c ${ANDROID_QEMU2_TOP_DIR}/crypto/xts.c
 ${ANDROID_AUTOGEN}/crypto/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/crypto")
 
-set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/disas/arm-a64.cc ${ANDROID_QEMU2_TOP_DIR}/disas/arm.c ${ANDROID_QEMU2_TOP_DIR}/disas/i386.c
+set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/disas/arm-a64.cc ${ANDROID_QEMU2_TOP_DIR}/disas/arm.c ${ANDROID_QEMU2_TOP_DIR}/disas/i386.c ${ANDROID_QEMU2_TOP_DIR}/disas/riscv.c
 PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/disas")
 
 set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/disas/libvixl/vixl/a64/decoder-a64.cc ${ANDROID_QEMU2_TOP_DIR}/disas/libvixl/vixl/a64/disasm-a64.cc ${ANDROID_QEMU2_TOP_DIR}/disas/libvixl/vixl/a64/instructions-a64.cc
@@ -2179,6 +2180,9 @@ ${ANDROID_AUTOGEN}/hw/pci/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGE
 set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/hw/pcmcia/pcmcia.c ${ANDROID_QEMU2_TOP_DIR}/hw/pcmcia/pxa2xx.c
 PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/hw/pcmcia")
 
+set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/hw/riscv/riscv_hart.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/riscv_htif.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/riscv_ranchu.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_clint.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_e.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_plic.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_prci.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_test.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_u.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_uart.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/spike.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/virt.c
+PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/hw/riscv")
+
 set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/hw/scsi/esp-pci.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/esp.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/lsi53c895a.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/megasas.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/mptconfig.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/mptendian.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/mptsas.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/scsi-bus.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/scsi-disk.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/scsi-generic.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/vhost-scsi-common.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/vhost-scsi.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/vhost-user-scsi.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/virtio-scsi-dataplane.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/virtio-scsi.c ${ANDROID_QEMU2_TOP_DIR}/hw/scsi/vmw_pvscsi.c
 ${ANDROID_AUTOGEN}/hw/scsi/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/hw/scsi")
 
@@ -2251,9 +2255,8 @@ ${ANDROID_AUTOGEN}/target/arm/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AU
 set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/target/i386/arch_dump.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/arch_memory_mapping.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/bpt_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/cc_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/cpu.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/excp_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/fpu_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/gdbstub.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/hyperv.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/int_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/kvm.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/machine.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/mem_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/misc_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/monitor.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/mpx_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/seg_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/sev.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/smm_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/svm_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/translate.c ${ANDROID_QEMU2_TOP_DIR}/target/i386/xsave_helper.c
 ${ANDROID_AUTOGEN}/target/i386/trace.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/target/i386")
 
-set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/target/riscv/translate.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/fpu_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/op_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/kvm-stub.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/pmp.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/gdbstub.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/helper.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/cpu.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_QEMU2_TOP_DIR}/${ANDROID_AUTOGEN}/target/riscv")
-set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/disas/riscv.c ${ANDROID_QEMU2_TOP_DIR}/disas/i386.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_QEMU2_TOP_DIR}/${ANDROID_AUTOGEN}/disas")
-set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_clint.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/riscv_htif.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_u.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_e.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/virt.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_plic.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/riscv_ranchu.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_prci.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_test.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/riscv_hart.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/spike.c ${ANDROID_QEMU2_TOP_DIR}/hw/riscv/sifive_uart.c PROPERTIES COMPILE_FLAGS " -I ${ANDROID_QEMU2_TOP_DIR}/${ANDROID_AUTOGEN}/hw/riscv")
+set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/target/riscv/cpu.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/fpu_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/gdbstub.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/helper.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/kvm-stub.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/op_helper.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/pmp.c ${ANDROID_QEMU2_TOP_DIR}/target/riscv/translate.c
+PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/target/riscv")
 
 set_source_files_properties(${ANDROID_QEMU2_TOP_DIR}/tcg/optimize.c ${ANDROID_QEMU2_TOP_DIR}/tcg/tcg-common.c ${ANDROID_QEMU2_TOP_DIR}/tcg/tcg-op-gvec.c ${ANDROID_QEMU2_TOP_DIR}/tcg/tcg-op-vec.c ${ANDROID_QEMU2_TOP_DIR}/tcg/tcg-op.c ${ANDROID_QEMU2_TOP_DIR}/tcg/tcg.c
 PROPERTIES COMPILE_FLAGS " -I ${ANDROID_AUTOGEN}/tcg")
