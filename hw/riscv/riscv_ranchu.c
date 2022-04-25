@@ -560,6 +560,13 @@ static void riscv_ranchu_board_init(MachineState *machine)
     memory_region_add_subregion(system_memory, memmap[RANCHU_DRAM].base,
         main_mem);
 
+
+    /* used by create_fdt */
+    virt_high_pcie_memmap.size = VIRT64_HIGH_PCIE_MMIO_SIZE;
+    virt_high_pcie_memmap.base = memmap[RANCHU_DRAM].base + machine->ram_size;
+    virt_high_pcie_memmap.base =
+        ROUND_UP(virt_high_pcie_memmap.base, virt_high_pcie_memmap.size);
+
     /* create device tree */
     fdt = create_fdt(s, memmap, machine->ram_size, machine->kernel_cmdline);
 
@@ -596,10 +603,6 @@ static void riscv_ranchu_board_init(MachineState *machine)
         memmap[RANCHU_CLINT].size, smp_cpus,
         SIFIVE_SIP_BASE, SIFIVE_TIMECMP_BASE, SIFIVE_TIME_BASE);
 
-    virt_high_pcie_memmap.size = VIRT64_HIGH_PCIE_MMIO_SIZE;
-    virt_high_pcie_memmap.base = memmap[RANCHU_DRAM].base + machine->ram_size;
-    virt_high_pcie_memmap.base =
-        ROUND_UP(virt_high_pcie_memmap.base, virt_high_pcie_memmap.size);
 
     for (i = 0; i < VIRTIO_COUNT; i++) {
         sysbus_create_simple("virtio-mmio",
@@ -675,6 +678,13 @@ static void riscv_ranchu_board_init(MachineState *machine)
                    virt_high_pcie_memmap.size,
                    memmap[RANCHU_PCIE_PIO].base,
                    DEVICE(s->plic));
+
+    {
+        PCIBus *pci_bus = (PCIBus*)object_resolve_path_type("", TYPE_PCI_BUS, NULL);
+        if (!pci_bus)
+            error_report("No PCI bus available to add goldfish_address_space device to.");
+        pci_create_simple(pci_bus, PCI_DEVFN(11,0), "goldfish_address_space");
+    }
 
     serial_mm_init(system_memory, memmap[RANCHU_UART0].base,
         0, SIFIVE_PLIC(s->plic)->irqs[UART0_IRQ], 399193,
